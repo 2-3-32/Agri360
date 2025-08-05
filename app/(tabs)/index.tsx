@@ -1,75 +1,118 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React from 'react';
+import {
+  StatusBar,
+  StyleSheet,
+  useColorScheme,
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  Alert,
+  ImageBackground,
+} from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const BACKGROUND_IMAGE = {
+  uri: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
+};
+const LOGO_IMAGE = {
+  uri: 'https://img.icons8.com/ios-filled/100/4caf50/tractor.png',
+};
 
-export default function HomeScreen() {
+export default function App() {
+  const isDarkMode = useColorScheme() === 'dark';
+
+  const handleGetStarted = () => {
+    Alert.alert('Welcome to Agri360!', "Let's get started!");
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <ImageBackground
+      source={BACKGROUND_IMAGE}
+      style={styles.background}
+      resizeMode="cover"
+      blurRadius={2}
+    >
+      <View
+        style={[
+          styles.overlay,
+          { backgroundColor: isDarkMode ? 'rgba(26,26,26,0.7)' : 'rgba(255,255,255,0.7)' },
+        ]}
+      />
+      <View style={styles.content}>
+        <Image source={LOGO_IMAGE} style={styles.logo} resizeMode="contain" />
+        <Text style={[styles.title, { color: isDarkMode ? '#fff' : '#222' }]}>
+          Welcome to Agri360
+        </Text>
+        <Text style={[styles.subtitle, { color: isDarkMode ? '#ddd' : '#333' }]}>
+          Empowering Farmers. Growing Futures.
+        </Text>
+        <TouchableOpacity style={styles.button} onPress={handleGetStarted} activeOpacity={0.85}>
+          <Text style={styles.buttonText}>Get Started</Text>
+        </TouchableOpacity>
+      </View>
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  background: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2,
+    width: '100%',
+    paddingHorizontal: 24,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 28,
+    marginTop: -40,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  title: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+    letterSpacing: 1.2,
+  },
+  subtitle: {
+    fontSize: 18,
+    marginBottom: 36,
+    textAlign: 'center',
+    fontWeight: '500',
+    opacity: 0.9,
+  },
+  button: {
+    backgroundColor: '#4caf50',
+    paddingVertical: 16,
+    paddingHorizontal: 48,
+    borderRadius: 32,
+    elevation: 3,
+    shadowColor: '#4caf50',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '700',
+    letterSpacing: 1,
   },
 });
