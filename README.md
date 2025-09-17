@@ -1,6 +1,10 @@
-# Welcome to your Expo app 👋
+# Agri360 - Vivasayi
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A college project built with Expo and React Native.
+
+## About
+
+This is an agricultural application developed as a college project using modern mobile development technologies.
 
 ## Get started
 
