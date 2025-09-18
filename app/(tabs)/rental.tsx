@@ -3,9 +3,10 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Alert,
+  Animated,
   Dimensions,
   Image,
   Modal,
@@ -222,6 +223,9 @@ export default function RentalPage() {
   const [contactModalVisible, setContactModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [showCategories, setShowCategories] = useState(true);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const categoryAnimation = useRef(new Animated.Value(1)).current;
 
   const categories = [
     { name: 'All', icon: 'grid' },
@@ -276,6 +280,44 @@ export default function RentalPage() {
         },
       ]
     );
+  };
+
+  const handleScroll = (event: any) => {
+    const scrollY = event.nativeEvent.contentOffset.y;
+    // Hide categories when scrolling down more than 50px
+    if (scrollY > 50) {
+      if (showCategories) {
+        setShowCategories(false);
+        Animated.timing(categoryAnimation, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      }
+    } else {
+      if (!showCategories) {
+        setShowCategories(true);
+        Animated.timing(categoryAnimation, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      }
+    }
+  };
+
+  const handleCategorySelect = (categoryName: string) => {
+    setSelectedCategory(categoryName);
+    // Reset scroll position and show categories when selecting a new category
+    setShowCategories(true);
+    Animated.timing(categoryAnimation, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({ y: 0, animated: true });
+    }
   };
 
   const renderToolCard = (tool: Tool) => (
@@ -359,49 +401,72 @@ export default function RentalPage() {
       </View>
 
       {/* Category Filter */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoryContainer}
-        contentContainerStyle={styles.categoryContent}
+      <Animated.View 
+        style={[
+          styles.categoryWrapper,
+          {
+            opacity: categoryAnimation,
+            transform: [{
+              translateY: categoryAnimation.interpolate({
+                inputRange: [0, 1],
+                outputRange: [-50, 0],
+              })
+            }]
+          }
+        ]}
+        pointerEvents={showCategories ? 'auto' : 'none'}
       >
-        {categories.map((category) => (
-          <TouchableOpacity
-            key={category.name}
-            style={[
-              styles.categoryButton,
-              {
-                backgroundColor: selectedCategory === category.name 
-                  ? Colors[colorScheme ?? 'light'].tint 
-                  : Colors[colorScheme ?? 'light'].background,
-                borderColor: Colors[colorScheme ?? 'light'].tint,
-              }
-            ]}
-            onPress={() => setSelectedCategory(category.name)}
-          >
-            <IconSymbol 
-              name={category.icon as any} 
-              size={10} 
-              color={selectedCategory === category.name 
-                ? 'white' 
-                : Colors[colorScheme ?? 'light'].tint} 
-            />
-            <Text style={[
-              styles.categoryText,
-              {
-                color: selectedCategory === category.name 
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoryContainer}
+          contentContainerStyle={styles.categoryContent}
+        >
+          {categories.map((category) => (
+            <TouchableOpacity
+              key={category.name}
+              style={[
+                styles.categoryButton,
+                {
+                  backgroundColor: selectedCategory === category.name 
+                    ? Colors[colorScheme ?? 'light'].tint 
+                    : Colors[colorScheme ?? 'light'].background,
+                  borderColor: Colors[colorScheme ?? 'light'].tint,
+                }
+              ]}
+              onPress={() => handleCategorySelect(category.name)}
+            >
+              <IconSymbol 
+                name={category.icon as any} 
+                size={6} 
+                color={selectedCategory === category.name 
                   ? 'white' 
-                  : Colors[colorScheme ?? 'light'].tint,
-              }
-            ]}>
-              {category.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+                  : Colors[colorScheme ?? 'light'].tint} 
+              />
+              <Text style={[
+                styles.categoryText,
+                {
+                  color: selectedCategory === category.name 
+                    ? 'white' 
+                    : Colors[colorScheme ?? 'light'].tint,
+                }
+              ]}>
+                {category.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </Animated.View>
 
       {/* Tools List */}
-      <ScrollView style={styles.toolsList} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        key={selectedCategory}
+        ref={scrollViewRef}
+        style={styles.toolsList} 
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         {filteredTools.map(renderToolCard)}
       </ScrollView>
 
@@ -488,26 +553,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     fontSize: 16,
   },
+  categoryWrapper: {
+    overflow: 'hidden',
+  },
   categoryContainer: {
-    marginBottom: 10,
-    height: 35,
+    marginBottom: 8,
+    height: 'auto',
+    minHeight: 20,
+    opacity: 1,
   },
   categoryContent: {
     paddingHorizontal: 20,
+    paddingVertical: 2,
   },
   categoryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginRight: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
+    marginRight: 4,
     borderWidth: 1,
-    gap: 3,
-    height: 25,
+    gap: 1,
+    height: 'auto',
+    minHeight: 18,
   },
   categoryText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '600',
   },
   toolsList: {
